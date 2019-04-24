@@ -191,9 +191,13 @@ void depositFunds() {
     printf("\nEnter the amount you'd like to deposit: \n");
     scanf("%lf", &depositAmount);
 
+    if(depositAmount >= 0.01) {
     customerA.balance = (customerA.balance + depositAmount);
-
     queryFunds();
+    }
+    else {
+        printf("\nDeposit must be more than $0.00.\n");
+    }
 
 }
 
@@ -206,10 +210,19 @@ void withdrawFunds() {
     printf("\nEnter the amount you'd like to withdraw: \n");
     scanf("%lf", &withdrawAmount);
 
-    customerA.balance = (customerA.balance - withdrawAmount);
+    if(withdrawAmount >= 0.01)  {
 
-    queryFunds();
-
+        if(withdrawAmount <= customerA.balance) {
+        customerA.balance = (customerA.balance - withdrawAmount);
+        queryFunds();
+        }
+        else {
+            printf("\nYou can't withdraw more than you have.\n");
+        }
+    }
+    else {
+        printf("\nYou must withdraw more than $0.00.\n");
+    }
 }
 
 /*
@@ -227,10 +240,19 @@ void transferFunds() {
         printf("\nEnter the amount you'd like to transfer: ");
         scanf("%lf", &reciveeMoney);
 
-        customerA.balance = customerA.balance - reciveeMoney;
-        customerB.balance = customerB.balance + reciveeMoney;
-
-        printf("\nTransfer successful!\n");
+        if(reciveeMoney >= 0.01) {
+            if(reciveeMoney <= customerA.balance) {
+                customerA.balance = customerA.balance - reciveeMoney;
+                customerB.balance = customerB.balance + reciveeMoney;
+                printf("\nTransfer successful!\n");
+            }
+            else {
+                printf("\nYou can't transfer more than you have.\n");
+            }
+        }
+        else {
+            printf("\nYou must transfer more than $0.00.\n");
+        }
 
     }
     else {
