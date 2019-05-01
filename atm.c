@@ -2,10 +2,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-//Teacher mode
+//Grading mode
 //Displays all account numbers and pins
 //  1-enabled 0-disabled
-int TEACHERMODE = 1;
+int GRADINGMODE = 1;
 
 //Customer struct
 struct customerInformation {
@@ -41,14 +41,15 @@ int validateAccount()
     int accountIndex;
     int userAccountNumberInput;
 
-    if(TEACHERMODE == 1) {
-        printf("\nTeacher Info:\n-------------\nCurrent User Accounts:\n");
+    //Allows professor to see all account numbers and PINs
+    if(GRADINGMODE == 1) {
+        printf("\nGrading Mode ENABLED:\n--------------------------\nCurrent User Accounts:\n");
         for(int i=0; i<=4; i++) {
             if(customer.accountNumber[i] != -1) {
                 printf("ID: %d PIN: %d\n", customer.accountNumber[i], customer.pinNumber[i]);
             }
         }
-        printf("-----------\n");
+        printf("--------------------------\n");
     }
 
     printf("\nEnter your account number: ");
@@ -374,6 +375,7 @@ void queryFunds(int accountIndex) {
 */
 void openAccount() {
 
+    //If there are more than 5 accounts
     if(customer.accountNumber[4] != -1) {
         printf("\nYou can only create 5 accounts at one time!\n");
     }
@@ -392,12 +394,14 @@ void openAccount() {
         printf("\nEnter the users PIN: \n");
         scanf("%d", &userPin);
 
+        //Must be 4 digit number
         if(userPin > 999 && userPin < 10000) {
 
             int userSSN;
             printf("\nEnter the users SSN: \n");
             scanf("%d", &userSSN);
 
+            //Must be 9 digit number
             if(userSSN > 99999999 && userSSN < 1000000000 ) {
                 customer.pinNumber[newIndex] = userPin;
                 customer.socialSecurity[newIndex] = userSSN;
@@ -435,6 +439,7 @@ void closeAccount() {
     for(int i=0; i<=4; i++) {
 
         if(userAccount == customer.accountNumber[i] && userAccount != -1) {
+            //Reset all info
             customer.accountNumber[i] = -1;
             customer.pinNumber[i] = -1;
             customer.balance[i] = -1;
@@ -469,8 +474,8 @@ void cancelTransaction() {
 */
 int main() {
 
-
     bool exitSelection = false;
+
     //While user doesn't want to quit
     while(exitSelection == false) {
 
