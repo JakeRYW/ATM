@@ -2,18 +2,25 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+//Teacher mode
+//Displays all account numbers and pins
+//  1-enabled 0-disabled
+int TEACHERMODE = 1;
 
+//Customer struct
 struct customerInformation {
-    int accountNumber[4];
-    int pinNumber[4];
-    int socialSecurity[4];
-    double balance[4];
+    int accountNumber[5];
+    int pinNumber[5];
+    int socialSecurity[5];
+    double balance[5];
 };
 
+//Teller struct
 struct tellerInformation {
     int accountNumber;
 };
 
+//Customer struct array
 struct customerInformation customer =
 {
         {12345, -1, -1, -1, -1},
@@ -22,7 +29,8 @@ struct customerInformation customer =
         {100, -1, -1, -1, -1}
 };
 
-struct tellerInformation teller = {12346};
+//Teller account
+struct tellerInformation teller = {10001};
 
 /*
 * Function to validate the users account number.
@@ -33,10 +41,20 @@ int validateAccount()
     int accountIndex;
     int userAccountNumberInput;
 
+    if(TEACHERMODE == 1) {
+        printf("\nTeacher Info:\n-------------\nCurrent User Accounts:\n");
+        for(int i=0; i<=4; i++) {
+            if(customer.accountNumber[i] != -1) {
+                printf("ID: %d PIN: %d\n", customer.accountNumber[i], customer.pinNumber[i]);
+            }
+        }
+        printf("-----------\n");
+    }
+
     printf("\nEnter your account number: ");
     scanf("%d", &userAccountNumberInput);
 
-    for(int i=0; i<4; i++) {
+    for(int i=0; i<=4; i++) {
         if(userAccountNumberInput == customer.accountNumber[i] && userAccountNumberInput != -1) {
 
             accountIndex = i;
@@ -59,7 +77,7 @@ bool validatePIN(int accountIndex)
     bool pinValidate;
     int userPIN;
 
-    printf("Enter your PIN: ");
+    printf("\nEnter your PIN: ");
     scanf("%d", &userPIN);
 
     if(userPIN == customer.pinNumber[accountIndex] && userPIN != -1) {
@@ -119,7 +137,7 @@ int validateUser() {
                 if(remaningAttempts <= 0) {
 
                      printf("PIN number is incorrect! You have %d", remaningAttempts);
-                     printf(" attempts left! Transaction terminated!\n");
+                     printf(" attempts left!\nTransaction terminated!\n");
                      exit(0);
 
                 }
@@ -135,7 +153,7 @@ int validateUser() {
 
         //Otherwise, PIN correct.
         else {
-            printf("Pin correct!\n");
+            printf("\nPin correct!\n");
             pinValidation = true;
             return accountIndex;
         }
@@ -144,6 +162,9 @@ int validateUser() {
 
 }
 
+/*
+* Function to validate the tellers account.
+*/
 void validateTeller()
 {
 
@@ -151,7 +172,7 @@ void validateTeller()
     int tellerAccountNumberInput;
 
     while(tellerValidate == false) {
-        printf("\nEnter your account number: ");
+        printf("\nDefault Teller Account Number: 10001\nEnter your account number: ");
         scanf("%d", &tellerAccountNumberInput);
 
         if(tellerAccountNumberInput == teller.accountNumber) {
@@ -160,6 +181,7 @@ void validateTeller()
 
         }
         else {
+            printf("\nInvalid account number! Try again!\n");
             tellerValidate = false;
 
         }
@@ -212,6 +234,9 @@ void displayMenu(int accountIndex) {
 
 }
 
+/*
+* Function to display menu for teller.
+*/
 void displayBankerMenu() {
 
     bool userCancel = false;
@@ -296,38 +321,40 @@ void transferFunds(int accountIndex) {
     printf("\nEnter the account number of the user you'd like to send money to: ");
     scanf("%d", &reciveeAccountNumber);
 
-    for(int i=0; i<4; i++) {
+    for(int i=0; i<=4; i++) {
 
-    if(i == accountIndex) {
+        if(i == accountIndex) {
 
-    }
-    else {
-        if(reciveeAccountNumber == customer.accountNumber[i]) {
+        }
+        else {
 
-            double reciveeMoney;
-            printf("\nEnter the amount you'd like to transfer: ");
-            scanf("%lf", &reciveeMoney);
+            if(reciveeAccountNumber == customer.accountNumber[i]) {
 
-            if(reciveeMoney >= 0.01) {
-                if(reciveeMoney <= customer.balance[accountIndex]) {
-                    customer.balance[accountIndex] = customer.balance[accountIndex] - reciveeMoney;
-                    customer.balance[i] = customer.balance[i] + reciveeMoney;
-                    printf("\nTransfer successful!\n");
+                double reciveeMoney;
+                printf("\nEnter the amount you'd like to transfer: ");
+                scanf("%lf", &reciveeMoney);
+
+                if(reciveeMoney >= 0.01) {
+
+                    if(reciveeMoney <= customer.balance[accountIndex]) {
+                        customer.balance[accountIndex] = customer.balance[accountIndex] - reciveeMoney;
+                        customer.balance[i] = customer.balance[i] + reciveeMoney;
+                        printf("\nTransfer successful!\n");
+                    }
+                    else {
+                        printf("\nYou can't transfer more than you have.\n");
+                    }
                 }
                 else {
-                printf("\nYou can't transfer more than you have.\n");
+                    printf("\nYou must transfer more than $0.00.\n");
                 }
             }
             else {
-                printf("\nYou must transfer more than $0.00.\n");
+                if(i==4) {
+                    printf("\nNo account found!\n");
+                }
             }
         }
-        else {
-            if(i==4) {
-                printf("No account found!");
-            }
-        }
-    }
 
     }
 
@@ -342,6 +369,9 @@ void queryFunds(int accountIndex) {
 
 }
 
+/*
+* Function to open a user account.
+*/
 void openAccount() {
 
     if(customer.accountNumber[4] != -1) {
@@ -350,7 +380,7 @@ void openAccount() {
     else {
 
         int newIndex;
-        for(int i=0; i<4; i++) {
+        for(int i=0; i<=4; i++) {
 
             if(customer.accountNumber[i] == -1) {
                 newIndex = i;
@@ -377,7 +407,7 @@ void openAccount() {
                 int randomAccountNumber = (rand() % (99999 + 1 - 10000)) + 10000;
                 customer.accountNumber[newIndex] = randomAccountNumber;
 
-                printf("Customers account number is: %d\n", randomAccountNumber);
+                printf("\nCustomers new account number is: %d\n", randomAccountNumber);
 
             }
             else {
@@ -393,13 +423,16 @@ void openAccount() {
 
 }
 
+/*
+* Function to close users account.
+*/
 void closeAccount() {
 
     int userAccount;
     printf("\nEnter the users account number to cancel: \n");
     scanf("%d", &userAccount);
 
-    for(int i=0; i<4; i++) {
+    for(int i=0; i<=4; i++) {
 
         if(userAccount == customer.accountNumber[i] && userAccount != -1) {
             customer.accountNumber[i] = -1;
@@ -438,33 +471,42 @@ int main() {
 
 
     bool exitSelection = false;
-
+    //While user doesn't want to quit
     while(exitSelection == false) {
 
+        //Sign in menu
         int userSelection;
         printf("1. Sign in as customer.\n");
         printf("2. Sign in as bank teller.\n");
         printf("3. Quit\n");
         scanf("%d", &userSelection);
 
+        //If customer signs in
         if(userSelection == 1) {
             int accountIndex = validateUser();
             displayMenu(accountIndex);
         }
         else {
+            //If teller signs in
             if(userSelection == 2) {
                 validateTeller();
                 displayBankerMenu();
             }
             else {
+                //If user quits
                 if(userSelection == 3) {
                     printf("\nThanks for using the ATM!\n");
                     exit(1);
                 }
+                //Else invalid option
                 else {
                     printf("\nInvalid choice!\n");
                 }
+
             }
+
         }
+
     }
+
 }
