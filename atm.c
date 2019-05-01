@@ -2,56 +2,59 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-/***************************************
-* THINGS THAT NEED TO BE ADDED/UPDATED *
-*   1. Loops to get all user input.    *
-*   2. Check for overdraw.             *
-*   3. Change hard-coding so it can be *
-*      any account, rather than just   *
-*      accountA.                       *
-****************************************/
-
 
 struct customerInformation {
-    int accountNumber;
-    int pinNumber;
-    double balance;
+    int accountNumber[4];
+    int pinNumber[4];
+    int socialSecurity[4];
+    double balance[4];
 };
 
-struct customerInformation customerA = {1, 1234, 100};
-struct customerInformation customerB = {2, 1235, 200};
+struct tellerInformation {
+    int accountNumber;
+};
+
+struct customerInformation customer =
+{
+        {12345, -1, -1, -1, -1},
+        {1234, -1, -1, -1, -1},
+        {232476545, -1, -1, -1},
+        {100, -1, -1, -1, -1}
+};
+
+struct tellerInformation teller = {12346};
 
 /*
 * Function to validate the users account number.
 */
-bool validateAccount()
+int validateAccount()
 {
 
-    bool accountValidate;
+    int accountIndex;
     int userAccountNumberInput;
 
-    printf("Enter your account number: ");
+    printf("\nEnter your account number: ");
     scanf("%d", &userAccountNumberInput);
 
+    for(int i=0; i<4; i++) {
+        if(userAccountNumberInput == customer.accountNumber[i] && userAccountNumberInput != -1) {
 
-    if(userAccountNumberInput == customerA.accountNumber) {
+            accountIndex = i;
+            return accountIndex;
 
-        accountValidate = true;
-        return accountValidate;
-
+        }
+        else {
+            accountIndex = -1;
+        }
     }
-    else {
-        accountValidate = false;
 
-    }
-
-    return accountValidate;
+    return -1;
 }
 
 /*
 * Function to validate the users pin number.
 */
-bool validatePIN()
+bool validatePIN(int accountIndex)
 {
     bool pinValidate;
     int userPIN;
@@ -59,7 +62,7 @@ bool validatePIN()
     printf("Enter your PIN: ");
     scanf("%d", &userPIN);
 
-    if(userPIN == customerA.pinNumber) {
+    if(userPIN == customer.pinNumber[accountIndex] && userPIN != -1) {
 
         pinValidate = true;
         return pinValidate;
@@ -79,12 +82,15 @@ bool validatePIN()
 * Loops the validateAccount infinity, and loops validatePIN
 * 3 times.
 */
-bool validateUser() {
+int validateUser() {
 
+    int accountIndex;
     bool accountValidation = false;
     while(accountValidation == false) {
 
-        if(!validateAccount()) {
+        accountIndex = validateAccount();
+
+        if(accountIndex == -1) {
 
             printf("Account number is incorrect! Try again!\n");
 
@@ -107,7 +113,7 @@ bool validateUser() {
         int remaningAttempts = 3-attempts;
 
         //If the PIN was incorrect.
-        if(!validatePIN()) {
+        if(!validatePIN(accountIndex)) {
 
                 //If there are no more remaining attempts, transaction is canceled.
                 if(remaningAttempts <= 0) {
@@ -131,11 +137,34 @@ bool validateUser() {
         else {
             printf("Pin correct!\n");
             pinValidation = true;
-
+            return accountIndex;
         }
 
     }
 
+}
+
+void validateTeller()
+{
+
+    bool tellerValidate = false;
+    int tellerAccountNumberInput;
+
+    while(tellerValidate == false) {
+        printf("\nEnter your account number: ");
+        scanf("%d", &tellerAccountNumberInput);
+
+        if(tellerAccountNumberInput == teller.accountNumber) {
+
+            tellerValidate = true;
+
+        }
+        else {
+            tellerValidate = false;
+
+        }
+
+    }
 }
 
 /*
@@ -143,7 +172,7 @@ bool validateUser() {
 * Gets the users selected choice, and calls
 * appropriate function.
 */
-void displayMenu() {
+void displayMenu(int accountIndex) {
 
     bool userCancel = false;
     while(userCancel == false) {
@@ -160,19 +189,52 @@ void displayMenu() {
 
         switch(choice) {
             case(1) :
-                depositFunds();
+                depositFunds(accountIndex);
                 break;
             case(2) :
-                withdrawFunds();
+                withdrawFunds(accountIndex);
                 break;
             case(3) :
-                queryFunds();
+                queryFunds(accountIndex);
                 break;
             case(4) :
-                transferFunds();
+                transferFunds(accountIndex);
                 break;
             case(5) :
                 cancelTransaction();
+                userCancel = true;
+                break;
+            default :
+                printf("Invalid choice!\n");
+        }
+
+    }
+
+}
+
+void displayBankerMenu() {
+
+    bool userCancel = false;
+    while(userCancel == false) {
+
+        printf("\nPlease select one of the following options:\n");
+        printf("1. Open Account\n");
+        printf("2. Close Account\n");
+        printf("3. Cancel\n");
+
+        int choice;
+        scanf("%d", &choice);
+
+        switch(choice) {
+            case(1) :
+                openAccount();
+                break;
+            case(2) :
+                closeAccount();
+                break;
+            case(3) :
+                cancelTransaction();
+                userCancel = true;
                 break;
             default :
                 printf("Invalid choice!\n");
@@ -185,15 +247,15 @@ void displayMenu() {
 /*
 * Function to deposit selected funds.
 */
-void depositFunds() {
+void depositFunds(int accountIndex) {
 
     double depositAmount;
     printf("\nEnter the amount you'd like to deposit: \n");
     scanf("%lf", &depositAmount);
 
     if(depositAmount >= 0.01) {
-    customerA.balance = (customerA.balance + depositAmount);
-    queryFunds();
+    customer.balance[accountIndex] = (customer.balance[accountIndex] + depositAmount);
+    queryFunds(accountIndex);
     }
     else {
         printf("\nDeposit must be more than $0.00.\n");
@@ -204,7 +266,7 @@ void depositFunds() {
 /*
 * Function to withdraw selected funds.
 */
-void withdrawFunds() {
+void withdrawFunds(int accountIndex) {
 
     double withdrawAmount;
     printf("\nEnter the amount you'd like to withdraw: \n");
@@ -212,9 +274,9 @@ void withdrawFunds() {
 
     if(withdrawAmount >= 0.01)  {
 
-        if(withdrawAmount <= customerA.balance) {
-        customerA.balance = (customerA.balance - withdrawAmount);
-        queryFunds();
+        if(withdrawAmount <= customer.balance[accountIndex]) {
+        customer.balance[accountIndex] = (customer.balance[accountIndex] - withdrawAmount);
+        queryFunds(accountIndex);
         }
         else {
             printf("\nYou can't withdraw more than you have.\n");
@@ -228,36 +290,44 @@ void withdrawFunds() {
 /*
 * Function to transfer selected funds between two accounts.
 */
-void transferFunds() {
+void transferFunds(int accountIndex) {
 
     int reciveeAccountNumber;
     printf("\nEnter the account number of the user you'd like to send money to: ");
     scanf("%d", &reciveeAccountNumber);
 
-    if(reciveeAccountNumber == customerB.accountNumber) {
+    for(int i=0; i<4; i++) {
 
-        double reciveeMoney;
-        printf("\nEnter the amount you'd like to transfer: ");
-        scanf("%lf", &reciveeMoney);
-
-        if(reciveeMoney >= 0.01) {
-            if(reciveeMoney <= customerA.balance) {
-                customerA.balance = customerA.balance - reciveeMoney;
-                customerB.balance = customerB.balance + reciveeMoney;
-                printf("\nTransfer successful!\n");
-            }
-            else {
-                printf("\nYou can't transfer more than you have.\n");
-            }
-        }
-        else {
-            printf("\nYou must transfer more than $0.00.\n");
-        }
+    if(i == accountIndex) {
 
     }
     else {
+        if(reciveeAccountNumber == customer.accountNumber[i]) {
 
-        printf("\nNot a valid account!\n");
+            double reciveeMoney;
+            printf("\nEnter the amount you'd like to transfer: ");
+            scanf("%lf", &reciveeMoney);
+
+            if(reciveeMoney >= 0.01) {
+                if(reciveeMoney <= customer.balance[accountIndex]) {
+                    customer.balance[accountIndex] = customer.balance[accountIndex] - reciveeMoney;
+                    customer.balance[i] = customer.balance[i] + reciveeMoney;
+                    printf("\nTransfer successful!\n");
+                }
+                else {
+                printf("\nYou can't transfer more than you have.\n");
+                }
+            }
+            else {
+                printf("\nYou must transfer more than $0.00.\n");
+            }
+        }
+        else {
+            if(i==4) {
+                printf("No account found!");
+            }
+        }
+    }
 
     }
 
@@ -266,9 +336,89 @@ void transferFunds() {
 /*
 * Function to print user's balance.
 */
-void queryFunds() {
+void queryFunds(int accountIndex) {
 
-    printf("\nYour currents balance is now $%.2f\n", customerA.balance);
+    printf("\nYour current balance is now $%.2f\n", customer.balance[accountIndex]);
+
+}
+
+void openAccount() {
+
+    if(customer.accountNumber[4] != -1) {
+        printf("\nYou can only create 5 accounts at one time!\n");
+    }
+    else {
+
+        int newIndex;
+        for(int i=0; i<4; i++) {
+
+            if(customer.accountNumber[i] == -1) {
+                newIndex = i;
+            }
+
+        }
+
+        int userPin;
+        printf("\nEnter the users PIN: \n");
+        scanf("%d", &userPin);
+
+        if(userPin > 999 && userPin < 10000) {
+
+            int userSSN;
+            printf("\nEnter the users SSN: \n");
+            scanf("%d", &userSSN);
+
+            if(userSSN > 99999999 && userSSN < 1000000000 ) {
+                customer.pinNumber[newIndex] = userPin;
+                customer.socialSecurity[newIndex] = userSSN;
+                customer.balance[newIndex] = 0;
+
+                //Makes random number
+                int randomAccountNumber = (rand() % (99999 + 1 - 10000)) + 10000;
+                customer.accountNumber[newIndex] = randomAccountNumber;
+
+                printf("Customers account number is: %d\n", randomAccountNumber);
+
+            }
+            else {
+                printf("\nSSN must be 9 digits!\n");
+            }
+
+        }
+        else {
+            printf("\nPin must be 4 digits!\n");
+        }
+
+    }
+
+}
+
+void closeAccount() {
+
+    int userAccount;
+    printf("\nEnter the users account number to cancel: \n");
+    scanf("%d", &userAccount);
+
+    for(int i=0; i<4; i++) {
+
+        if(userAccount == customer.accountNumber[i] && userAccount != -1) {
+            customer.accountNumber[i] = -1;
+            customer.pinNumber[i] = -1;
+            customer.balance[i] = -1;
+            customer.socialSecurity[i] = -1;
+
+            printf("\nAccount %d has been closed!\n", userAccount);
+
+        }
+        else {
+            if(i == 4) {
+                printf("\nUser not found!\n");
+            }
+        }
+
+    }
+
+
 
 }
 
@@ -277,8 +427,7 @@ void queryFunds() {
 */
 void cancelTransaction() {
 
-    printf("\nThank you for using ATM!\n");
-    exit(0);
+    printf("\nTransaction canceled!\n");
 
 }
 
@@ -287,7 +436,35 @@ void cancelTransaction() {
 */
 int main() {
 
-    validateUser();
-    displayMenu();
 
+    bool exitSelection = false;
+
+    while(exitSelection == false) {
+
+        int userSelection;
+        printf("1. Sign in as customer.\n");
+        printf("2. Sign in as bank teller.\n");
+        printf("3. Quit\n");
+        scanf("%d", &userSelection);
+
+        if(userSelection == 1) {
+            int accountIndex = validateUser();
+            displayMenu(accountIndex);
+        }
+        else {
+            if(userSelection == 2) {
+                validateTeller();
+                displayBankerMenu();
+            }
+            else {
+                if(userSelection == 3) {
+                    printf("\nThanks for using the ATM!\n");
+                    exit(1);
+                }
+                else {
+                    printf("\nInvalid choice!\n");
+                }
+            }
+        }
+    }
 }
